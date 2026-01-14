@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>독도 역사 연대기: 주권의 기록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Pretendard 폰트 적용 - 가장 깔끔하고 현대적인 웹 폰트 */
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+        
+        :root {
+            --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: #f8f9fa;
+            letter-spacing: -0.01em;
+        }
+        
+        h1, h2, h3, .serif {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* Chart Container Styles */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .main-chart-container {
+            max-width: 900px;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        .analysis-chart-container {
+            max-width: 500px;
+            height: 300px;
+            max-height: 350px;
+        }
+
+        @media (min-width: 768px) {
+            .main-chart-container {
+                height: 400px;
+            }
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+
+        .card-transition {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-transition:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <!-- Header Section -->
+    <header class="bg-white text-slate-900 border-b border-slate-200 py-8 px-4 relative">
+        <div class="max-w-6xl mx-auto flex flex-col items-center">
+            <!-- Home Button -->
+            <a href="index.html" class="absolute left-4 top-8 md:left-8 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full transition-colors flex items-center space-x-2 text-sm font-medium border border-slate-200">
+                <span>🏠 홈으로</span>
+            </a>
+            
+            <div class="text-center mt-12 md:mt-0">
+                <span class="inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold mb-3 tracking-wider uppercase">Republic of Korea</span>
+                <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight">독도 역사 연대기</h1>
+                <p class="text-slate-500 max-w-2xl mx-auto leading-relaxed text-base">
+                    천 년의 세월이 증명하는 기록, 주권의 역사를 따라가 봅니다. <br class="hidden md:block">
+                    각 시대별 주요 문헌과 결정적 사건을 인터랙티브 대시보드로 확인하세요.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6 space-y-12">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard" class="space-y-8">
+            
+            <!-- Timeline Visualizer -->
+            <div class="flex flex-col space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-end px-2 gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800">📜 타임라인 시각화</h3>
+                        <p class="text-slate-400 text-sm">데이터 포인트를 클릭하여 상세 내역을 확인하세요.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3 text-xs font-semibold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                        <span class="flex items-center"><i class="category-dot bg-blue-500"></i>한국주권</span>
+                        <span class="flex items-center"><i class="category-dot bg-emerald-500"></i>일본인정</span>
+                        <span class="flex items-center"><i class="category-dot bg-rose-500"></i>현대분쟁/왜곡</span>
+                        <span class="flex items-center"><i class="category-dot bg-slate-400"></i>국제/기타</span>
+                    </div>
+                </div>
+                <div class="chart-wrapper main-chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detail & List Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- LEFT: Focus Card (Dynamic Content) -->
+                <div class="lg:col-span-8 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Focus View</h3>
+                    
+                    <div id="detail-card" class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden min-h-[350px] flex flex-col transition-all duration-500">
+                        <div id="detail-header" class="bg-slate-900 text-white p-8">
+                            <div class="flex justify-between items-start">
+                                <div class="space-y-3">
+                                    <span id="detail-year" class="inline-block bg-white/20 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full font-bold">연도 선택</span>
+                                    <h2 id="detail-title" class="text-3xl font-bold leading-tight tracking-tight">사건을 선택해주세요</h2>
+                                </div>
+                                <div id="detail-icon" class="text-5xl opacity-80 filter grayscale brightness-200">👆</div>
+                            </div>
+                        </div>
+                        <div class="p-8 flex-grow flex flex-col justify-between space-y-6">
+                            <div>
+                                <h4 class="text-xs font-black text-slate-300 uppercase mb-4 tracking-tighter">Historical Context</h4>
+                                <p id="detail-content" class="text-xl text-slate-700 leading-relaxed font-medium">
+                                    독도의 역사는 단순한 영토 문제를 넘어 우리 민족의 자존감과 연결됩니다. 리스트에서 항목을 클릭해 보세요.
+                                </p>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-400">문헌 근거 (Source)</span>
+                                <span id="detail-source" class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">---</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: Scrollable List -->
+                <div class="lg:col-span-4 space-y-4 flex flex-col">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest px-2">Archive List</h3>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-grow h-[450px]">
+                        <div id="event-list" class="overflow-y-auto h-full custom-scroll p-3 space-y-2">
+                            <!-- List items generated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ANALYSIS SECTION -->
+        <section class="bg-white rounded-3xl p-8 md:p-12 border border-slate-100 shadow-sm">
+            <div class="max-w-3xl mb-12">
+                <h2 class="text-3xl font-black text-slate-900 mb-4 tracking-tight">🔍 데이터로 보는 독도</h2>
+                <p class="text-slate-500 text-lg leading-relaxed">
+                    수집된 역사적 기록들을 분석해보면, 한국의 영유권 주장은 수 세기 동안 일관된 반면, 일본의 영유권 주장은 제국주의 팽창기와 맞물려 있음을 시각적으로 확인할 수 있습니다.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <!-- Analysis 1: Category Distribution -->
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+                        <h3 class="text-xl font-bold text-slate-800">기록 유형별 비중</h3>
+                    </div>
+                    <div class="chart-wrapper analysis-chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Analysis 2: Summary Insight -->
+                <div class="space-y-8">
+                    <div class="flex items-center space-x-3 mb-2">
+                        <span class="w-1.5 h-6 bg-slate-900 rounded-full"></span>
+                        <h3 class="text-xl font-bold text-slate-800">주요 통계 인사이트</h3>
+                    </div>
+                    
+                    <div class="grid gap-4">
+                        <div class="p-6 rounded-2xl bg-blue-50 border border-blue-100 card-transition">
+                            <h4 class="text-blue-900 font-bold mb-1">지속성 (Consistency)</h4>
+                            <p class="text-blue-700 text-sm leading-relaxed">조선 초기부터 대한제국까지 관찬 지리지를 통해 일관되게 주권을 행사해 왔습니다.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl bg-emerald-50 border border-emerald-100 card-transition">
+                            <h4 class="text-emerald-900 font-bold mb-1">상호 인정 (Acknowledgement)</h4>
+                            <p class="text-emerald-700 text-sm leading-relaxed">과거 일본의 공문서(태정관 지령 등)에서도 독도는 한국 영토임을 명확히 인정한 바 있습니다.</p>
+                        </div>
+                        <div class="p-6 rounded-2xl bg-rose-50 border border-rose-100 card-transition">
+                            <h4 class="text-rose-900 font-bold mb-1">침탈의 역사 (Agression)</h4>
+                            <p class="text-rose-700 text-sm leading-relaxed">현대의 갈등은 1905년 제국주의 침략 과정에서의 불법 편입 시도에서 기인합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-500 py-12 text-center mt-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-white font-bold mb-4">독도(Dokdo) 역사 인터랙티브</h2>
+            <p class="text-sm mb-6 max-w-md mx-auto">이 대시보드는 역사적 문헌과 공인된 자료를 바탕으로 교육적 목적으로 제작되었습니다.</p>
+            <div class="h-px bg-slate-800 w-24 mx-auto mb-6"></div>
+            <p class="text-xs uppercase tracking-widest font-bold">© 2026 Interactive History Project</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const dokdoData = [
+            { year: 1454, title: "세종실록지리지", content: "우산(독도)과 무릉(울릉도)이 강원도 울진현에 속한다고 기록. 조선의 관할권 명시.", source: "[1]", category: 1 },
+            { year: 1531, title: "신증동국여지승람", content: "독도가 우리 영토임을 밝히는 관찬 지리지 편찬.", source: "[2]", category: 1 },
+            { year: 1667, title: "은주시청합기", content: "일본 문헌. 울릉도와 독도가 일본 영토 밖(조선 땅)임을 스스로 기록함.", source: "[3]", category: 2 },
+            { year: 1693, title: "1차 안용복 사건", content: "안용복이 일본으로 끌려가 독도가 조선 땅임을 강력히 주장.", source: "[4]", category: 1 },
+            { year: 1696, title: "2차 안용복 사건", content: "안용복이 일본에 건너가 항의. 일본 막부가 '울릉도 도해 금지령'을 내려 조선 영토임을 인정.", source: "[5]", category: 2 },
+            { year: 1785, title: "삼국접양지도", content: "일본 학자 하야시 시헤이 제작. 독도를 조선색(황색)으로 칠하고 '조선의 것'으로 표기.", source: "[6]", category: 2 },
+            { year: 1877, title: "태정관 지령", content: "일본 최고 행정기관이 '독도와 울릉도는 일본과 관계없다'고 공식적으로 인정하고 지령을 내림.", source: "[7]", category: 2 },
+            { year: 1900, title: "대한제국 칙령 41호", content: "고종 황제가 독도를 울릉군의 관할 구역으로 공식 반포. 근대법적으로 영유권 재확인.", source: "[8]", category: 1 },
+            { year: 1905, title: "시마네현 고시 40호", content: "일본이 러일전쟁 중 군사적 목적으로 독도를 불법적으로 '다케시마'로 편입.", source: "[9]", category: 3 },
+            { year: 1906, title: "심흥택 보고서", content: "울릉군수 심흥택이 독도 불법 편입 소식을 듣고 '본군 소속'임을 명시하여 중앙 정부에 보고.", source: "[8]", category: 1 },
+            { year: 1946, title: "SCAPIN 제677호", content: "연합군최고사령관 지령. 독도를 일본의 통치권 및 행정 구역에서 명시적으로 제외.", source: "[10]", category: 4 },
+            { year: 1951, title: "샌프란시스코 강화조약", content: "일본이 한국의 독립을 인정. 독도 명시가 누락되어 이후 분쟁의 씨앗이 됨.", source: "[11]", category: 4 },
+            { year: 1952, title: "평화선 선포", content: "이승만 대통령이 독도를 포함한 인접 해양에 대한 주권(평화선) 선언.", source: "[12]", category: 1 },
+            { year: 1953, title: "독도의용수비대 활동", content: "홍순칠 등 민간인들이 독도에 상주하며 일본의 침범을 막고 실효적 지배 강화.", source: "[13], [14]", category: 1 },
+            { year: 1965, title: "한일기본조약", content: "독도 문제를 언급하지 않고 봉합. 이후 갈등의 불씨가 남음.", source: "[15]", category: 4 },
+            { year: 1998, title: "신한일어업협정", content: "독도가 한일 중간수역에 포함되며 영유권 및 어업권 논란 발생.", source: "[16]", category: 3 },
+            { year: 2005, title: "다케시마의 날 제정", content: "일본 시마네현이 2월 22일을 '다케시마의 날'로 제정하여 영유권 도발.", source: "[17]", category: 3 },
+            { year: 2011, title: "일본 교과서 왜곡", content: "일본 중학교 교과서 14종에 독도 영유권 주장을 기술. 교육을 통한 왜곡 심화.", source: "[18]", category: 3 }
+        ];
+
+        const colors = {
+            1: '#2563eb', 2: '#10b981', 3: '#f43f5e', 4: '#94a3b8'
+        };
+        const categoryLabels = {
+            1: '한국 주권 기록', 2: '일본의 인정', 3: '분쟁 및 왜곡', 4: '국제 조약'
+        };
+
+        let mainChartInstance = null;
+        let analysisChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set global font defaults for Chart.js
+            Chart.defaults.font.family = "'Pretendard', sans-serif";
+            Chart.defaults.color = '#64748b';
+            initApp();
+        });
+
+        function initApp() {
+            renderEventList();
+            renderTimelineChart();
+            renderAnalysisChart();
+            updateFocusCard(dokdoData[0]);
+        }
+
+        function renderEventList() {
+            const listContainer = document.getElementById('event-list');
+            listContainer.innerHTML = '';
+            dokdoData.forEach((item) => {
+                const el = document.createElement('div');
+                el.className = `p-4 rounded-xl cursor-pointer border-l-4 card-transition bg-slate-50 hover:bg-white border-transparent`;
+                
+                if(item.category === 1) el.style.borderLeftColor = colors[1];
+                else if(item.category === 2) el.style.borderLeftColor = colors[2];
+                else if(item.category === 3) el.style.borderLeftColor = colors[3];
+                else el.style.borderLeftColor = colors[4];
+
+                el.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-black text-slate-800 text-sm">${item.year}</span>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase">${item.source}</span>
+                    </div>
+                    <div class="text-sm text-slate-600 font-semibold truncate">${item.title}</div>
+                `;
+                el.addEventListener('click', () => updateFocusCard(item));
+                listContainer.appendChild(el);
+            });
+        }
+
+        function updateFocusCard(data) {
+            const card = document.getElementById('detail-card');
+            const header = document.getElementById('detail-header');
+            const year = document.getElementById('detail-year');
+            const title = document.getElementById('detail-title');
+            const content = document.getElementById('detail-content');
+            const source = document.getElementById('detail-source');
+            const icon = document.getElementById('detail-icon');
+
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+
+            setTimeout(() => {
+                year.innerText = `${data.year}`;
+                title.innerText = data.title;
+                content.innerText = data.content;
+                source.innerText = data.source;
+                
+                header.style.backgroundColor = colors[data.category];
+                
+                if(data.category === 1) icon.innerText = "🇰🇷"; 
+                else if(data.category === 2) icon.innerText = "📜";
+                else if(data.category === 3) icon.innerText = "⚠️";
+                else icon.innerText = "🌏";
+
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200);
+        }
+
+        function renderTimelineChart() {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            const chartData = dokdoData.map(item => ({
+                x: item.year, y: 1, r: 8, raw: item
+            }));
+
+            mainChartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartData.map(d => colors[d.raw.category] + 'cc'),
+                        borderColor: chartData.map(d => colors[d.raw.category]),
+                        borderWidth: 2, hoverRadius: 14, hoverBorderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            min: 1420, max: 2040, 
+                            title: { display: false }, 
+                            grid: { display: false },
+                            ticks: { font: { weight: 'bold' } }
+                        },
+                        y: { display: false, min: 0, max: 2 }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            displayColors: false,
+                            padding: 12,
+                            backgroundColor: '#1e293b',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                title: (ctx) => `${ctx[0].raw.raw.year}년`,
+                                label: (ctx) => ctx.raw.raw.title
+                            }
+                        }
+                    },
+                    onClick: (evt, activeElements) => {
+                        if (activeElements.length > 0) {
+                            updateFocusCard(chartData[activeElements[0].index].raw);
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAnalysisChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const counts = {1:0, 2:0, 3:0, 4:0};
+            dokdoData.forEach(d => counts[d.category]++);
+
+            analysisChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.values(categoryLabels),
+                    datasets: [{
+                        data: [counts[1], counts[2], counts[3], counts[4]],
+                        backgroundColor: [colors[1], colors[2], colors[3], colors[4]],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'right', 
+                            labels: { 
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 20,
+                                font: { size: 12, weight: 'bold' }
+                            } 
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
